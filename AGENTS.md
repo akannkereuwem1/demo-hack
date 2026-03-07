@@ -357,12 +357,15 @@ After completing the task, the agent must **stop and wait for the next instructi
 
 # 16. Agent Stop Condition
 
-Agents must stop immediately after completing the requested task.
+Agents must stop immediately after completing the requested task and add their imlementation plan and walk through for the specific issue in the docs/ directory . (example,after working on issue 5, update the doc/ directory with issue-5-project-structure/implementation-plan and issue-5-project-structure/walkthrough.)
+
+Always clarify with me before doing this.
 
 Agents must not:
 
 • start the next feature  
 • anticipate future tasks  
 • refactor unrelated code
+- document their walkthrough in the docs/
 
 The developer controls task progression.

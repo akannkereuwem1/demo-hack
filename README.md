@@ -1,6 +1,6 @@
 # demo-hack
 
-A Django web application boilerplate.
+A Django web application boilerplate refactored for the AgroNet backend architecture.
 
 ## Requirements
 
@@ -32,16 +32,11 @@ A Django web application boilerplate.
 4. **Apply database migrations**
 
    ```bash
+   cd backend
    python manage.py migrate
    ```
 
-5. **Create a superuser** (optional)
-
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-6. **Run the development server**
+5. **Run the development server**
 
    ```bash
    python manage.py runserver
@@ -51,27 +46,28 @@ A Django web application boilerplate.
 
 ## Project Structure
 
+The project has been refactored to comply with `AGENTS.md` specifying a clear separation for the MVP AgroNet backend features:
+
 ```
 demo-hack/
-├── core/               # Main application
-│   ├── migrations/     # Database migrations
-│   ├── admin.py        # Admin site configuration
-│   ├── apps.py         # App configuration
-│   ├── models.py       # Database models
-│   ├── tests.py        # Unit tests
-│   └── views.py        # View functions
-├── myproject/          # Django project configuration
-│   ├── asgi.py         # ASGI entry point
-│   ├── settings.py     # Project settings
-│   ├── urls.py         # URL configuration
-│   └── wsgi.py         # WSGI entry point
-├── manage.py           # Django management script
-├── requirements.txt    # Python dependencies
+├── backend/
+│   ├── apps/
+│   │   ├── ai/          # AI price prediction & image classification
+│   │   ├── orders/      # Offer negotiation and life-cycle state machine
+│   │   ├── payments/    # Integration with Interswitch payments
+│   │   ├── products/    # Produce listings by Farmers for Buyers
+│   │   └── users/       # Authenticaton and RBAC for Farmers/Buyers
+│   ├── config/          # Django configuration (settings, urls, asgi, wsgi)
+│   ├── tests/           # Integration tests
+│   ├── utils/           # Shared utility tools and helpers
+│   └── manage.py        # Django management script
+├── AGENTS.md            # Agent operational rules and context
+├── requirements.txt     # Python dependencies
 └── README.md
 ```
 
-## Running Tests
-
-```bash
-python manage.py test
-```
+## Deliverables for Issue #5
+- [x] Initialized the core apps `users`, `products`, `orders`, `payments`, `ai`
+- [x] Abstracted base directories (`config`, `tests`, `utils`) under `backend/` folder
+- [x] Configured `settings.py` so standard absolute imports are available
+- [x] Passed structural validation (`manage.py check`)

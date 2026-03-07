@@ -39,6 +39,8 @@ htmlcov/
 *.swp
 *.swo
 
+
+TASK.md
 # OS
 .DS_Store
 Thumbs.db

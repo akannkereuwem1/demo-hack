@@ -16,7 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['GET'])
+def test_500_error(request):
+    """Temporary view to test 500 errors and logging"""
+    # Deliberately raise a generic Python exception
+    raise ValueError("This is a deliberate test error for Issue #7!")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/test-error/', test_500_error, name='test_error'),
 ]

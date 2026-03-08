@@ -50,6 +50,8 @@ All endpoints under `/api/users/`:
 | POST | `/api/users/login/` | AllowAny | Login, returns JWT tokens |
 | GET | `/api/users/profile/` | IsAuthenticated | Get authenticated user's profile |
 
+- Decorated all views with `@extend_schema` (or `extend_schema_view`) to explicitly wire up the generic `APIView` requests for DRF Spectacular so Swagger picks up the parameters correctly.
+
 ### Serializers (Issue #27)
 - `UserRegistrationSerializer`: validates email, password (min 8 chars), role; calls `create_user` on save
 - `UserLoginSerializer`: validates credentials via `authenticate()`; attaches user to `validated_data`

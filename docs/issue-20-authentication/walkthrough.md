@@ -69,6 +69,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 | `/api/users/login/` | POST | Public | `{ user, tokens: { access, refresh } }` |
 | `/api/users/profile/` | GET | Bearer JWT | `{ id, email, role, full_name, ... }` |
 
+- All view methods (including standard JWT token views in `config/urls.py`) are annotated with `@extend_schema` from `drf_spectacular` to ensure accurate Swagger UI request body rendering.
+
 ---
 
 ## Issue #29 — Tests

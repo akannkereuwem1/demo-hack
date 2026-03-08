@@ -23,6 +23,8 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 @api_view(['GET'])
@@ -40,8 +42,19 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 
     # JWT Authentication Endpoints
-    path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/token/', extend_schema_view(
+        post=extend_schema(
+            request=TokenObtainPairSerializer,
+            description="Fetch a new pair of access and refresh tokens."
+        )
+    )(TokenObtainPairView).as_view(), name='token_obtain_pair'),
+    
+    path('api/auth/token/refresh/', extend_schema_view(
+        post=extend_schema(
+            request=TokenRefreshSerializer,
+            description="Use a valid refresh token to get a new access token."
+        )
+    )(TokenRefreshView).as_view(), name='token_refresh'),
     
     # App-level routing
     path('api/users/', include('users.urls')),

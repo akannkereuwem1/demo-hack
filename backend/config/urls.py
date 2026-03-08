@@ -15,11 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from rest_framework.decorators import api_view
+from django.urls import path, include
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def test_500_error(request):
     """Temporary view to test 500 errors and logging"""
     # Deliberately raise a generic Python exception
@@ -27,5 +34,21 @@ def test_500_error(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # OpenAPI Schema Configuration
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+
+    # JWT Authentication Endpoints
+    path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # App-level routing
+    path('api/users/', include('users.urls')),
+    path('api/products/', include('products.urls')),
+    path('api/orders/', include('orders.urls')),
+    path('api/payments/', include('payments.urls')),
+    path('api/ai/', include('ai.urls')),
+    
     path('api/test-error/', test_500_error, name='test_error'),
 ]

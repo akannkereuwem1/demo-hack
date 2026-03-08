@@ -1,6 +1,6 @@
 # AgroNet Backend
 
-A Django web application backend built for AgroNet, connecting farmers directly to buyers by removing middlemen from the agricultural supply chain.
+A strict Django REST Framework (DRF) mobile backend API built for AgroNet, connecting farmers directly to buyers by removing middlemen from the agricultural supply chain.
 
 ## Requirements
 
@@ -16,15 +16,15 @@ A Django web application backend built for AgroNet, connecting farmers directly 
    cd demo-hack
    ```
 
-2. **Create and activate a virtual environment**
+2. **Activate the shared virtual environment**
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   # Windows
+   C:\Users\WELCOME\Desktop\workspace\demo-hack-env\Scripts\activate
    ```
 
 3. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
+   uv add -r requirements.txt
    ```
 
 4. **Environment Configuration**
@@ -65,6 +65,29 @@ demo-hack/
 └── README.md
 ```
 
+## Authentication
+
+All authentication uses JWT (Bearer tokens). Register or login to receive tokens:
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/users/register/` | Public | Register a new farmer or buyer |
+| POST | `/api/users/login/` | Public | Login and receive JWT tokens |
+| GET | `/api/users/profile/` | Bearer JWT | Get authenticated user's profile |
+
+**Example login request:**
+```bash
+curl -X POST http://127.0.0.1:8000/api/users/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "yourpassword"}'
+```
+
+**Using the token:**
+```bash
+curl http://127.0.0.1:8000/api/users/profile/ \
+  -H "Authorization: Bearer <access_token>"
+```
+
 ## Documentation
 
 Instead of tracking issues directly in the README, specific documentation for major feature implementations and setups can be found in the `docs/` directory. Each issue folder contains an `implementation-plan.md` and a `walkthrough.md` detailing the architectural decisions and execution steps.
@@ -72,7 +95,9 @@ Instead of tracking issues directly in the README, specific documentation for ma
 - [Database Configuration Setup](docs/issue-4-configure-postgresql/)
 - [Project Structure Initialization](docs/issue-5-project-structure/)
 - [Logging Setup](docs/issue-7-setup-logging/)
-- [Deployment for Heroku](docs/issue-8-deployment/)
+- [Deployment for Railway/Fly.io](docs/issue-8-deployment/)
+- [Mobile Backend DRF API Refactoring](docs/issue-18-refactoring/)
+- [Authentication System](docs/issue-20-authentication/)
 
 ## Agent Rules
 

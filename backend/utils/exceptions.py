@@ -29,11 +29,20 @@ def custom_exception_handler(exc, context):
         
         response.data = custom_response_data
     else:
-        # Unhandled exceptions (e.g. 500) will be logged here, returning None 
-        # allows Django's default 500 handler to take over (which we might also want to customize eventually)
-        # However, for APIs, DRF handles standard APIExceptions. 
-        # Python logging handles unhandled exceptions securely without displaying secrets.
+        # Catch unhandled exceptions (e.g. 500) and explicitly return JSON
+        # instead of allowing Django to return HTML
         logger.error(f"Unhandled API Exception: {exc}", exc_info=exc)
+        
+        # We must return a Response object to DRF with strict JSON
+        custom_response_data = {
+            'success': False,
+            'error': {
+                'status_code': 500,
+                'message': "Internal Server Error",
+                'details': str(exc) if hasattr(exc, '__str__') else "An unexpected error occurred."
+            }
+        }
+        response = Response(custom_response_data, status=500)
 
     return response
 

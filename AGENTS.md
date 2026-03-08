@@ -7,6 +7,15 @@ Agents must follow the rules defined here before performing any code changes.
 
 ---
 
+# 0. Environment Requirements
+
+Agents must ALWAYS use and point to the Python virtual environment located at:
+`C:\Users\WELCOME\Desktop\workspace\demo-hack-env\Scripts\activate`
+
+To manage dependencies, agents must use `uv` and run commands (e.g., `uv add -r requirements.txt`) targeting this environment to ensure access to all previously installed dependencies. Do not create a new `.venv` in the current project root.
+
+---
+
 # 1. Core Principle: Iterative Development
 
 AgroNet is built **iteratively**.

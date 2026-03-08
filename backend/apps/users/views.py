@@ -6,6 +6,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema
 
 from users.serializers import UserLoginSerializer, UserProfileSerializer, UserRegistrationSerializer
 
@@ -19,6 +20,11 @@ class RegisterView(APIView):
     """
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=UserRegistrationSerializer,
+        responses={201: UserProfileSerializer},
+        description="Public endpoint to create a new farmer or buyer account."
+    )
     def post(self, request: Request) -> Response:
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -48,6 +54,11 @@ class LoginView(APIView):
     """
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=UserLoginSerializer,
+        responses={200: UserProfileSerializer},
+        description="Public endpoint to authenticate a user and return JWT tokens."
+    )
     def post(self, request: Request) -> Response:
         serializer = UserLoginSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
@@ -77,6 +88,10 @@ class ProfileView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        responses={200: UserProfileSerializer},
+        description="Protected endpoint to fetch the authenticated user's profile."
+    )
     def get(self, request: Request) -> Response:
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)

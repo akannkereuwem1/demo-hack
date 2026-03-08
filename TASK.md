@@ -1,47 +1,49 @@
-# TASK.md - Issue #18: Refactoring to Mobile Backend API Standard
+# TASK.md - Issue #20: Authentication
 
-## Current State Analysis
-The project currently has `djangorestframework` installed and added to `INSTALLED_APPS`, and a custom exception handler is configured. However, it still lacks the core configurations and structure required for a strict mobile backend API as specified in `AGENTS.md`.
+## Scope and Objectives
+The goal of this issue is to implement the MVP Authentication feature for the AgroNet mobile backend API. As specified in `AGENTS.md`, authentication must use JWT, include role-based access control (RBAC) for `farmer` and `buyer` roles, and adhere to strict security guidelines (no plaintext passwords, secrets in environment variables).
 
-**Does it need refactoring?** Yes. While you are on the right path by including DRF, the project is missing JWT authentication setup, strict JSON rendering, base API routing, and app-level API scaffolding. 
+## Sub-Issues / Implementation Steps
 
-## Planned Refactoring Steps
+### 1. Implement Role-Based Access Control (RBAC) Permissions #24 (`apps/users/permissions.py`)
+- [ ] Create custom DRF permission class `IsFarmer` to restrict access to farmer-only endpoints.
+- [ ] Create custom DRF permission class `IsBuyer` to restrict access to buyer-only endpoints.
 
-### 1. Dependency Updates (`requirements.txt`)
-- [ ] Add `djangorestframework-simplejwt` for JWT authentication.
-- [ ] Add `django-cors-headers` for cross-origin requests (useful for local dev/testing).
-- [ ] Add `drf-spectacular` for OpenAPI schema generation (highly recommended to help the mobile team auto-generate API clients).
+### 2. Configure Bcrypt Password Hashing & JWT Configuration #25 (`config/settings.py`)
+- [ ] Verify `djangorestframework-simplejwt` is configured correctly.
+- [ ] Set `AUTH_USER_MODEL` to point to the new custom user model.
+- [ ] Configure JWT token lifetimes and settings.
 
-### 2. Project Configuration (`backend/config/settings.py`)
-- [ ] Update `REST_FRAMEWORK` default settings:
-  - `DEFAULT_AUTHENTICATION_CLASSES`: Use `JWTAuthentication`.
-  - `DEFAULT_PERMISSION_CLASSES`: Set to `IsAuthenticated` so endpoints are secure by default.
-  - `DEFAULT_RENDERER_CLASSES`: Enforce `JSONRenderer` only (removes browsable API in production to ensure strict JSON).
-  - `DEFAULT_PAGINATION_CLASS`: Set up standard pagination for list endpoints.
-- [ ] Configure `SIMPLE_JWT` settings (e.g., token lifetimes).
-- [ ] Add and configure `corsheaders` middleware.
+### 3. Authentication Serializers #27 (`apps/users/serializers.py`)
+- [ ] Create `UserRegistrationSerializer` handling input validation, role assignment, and secure password hashing.
+- [ ] Create `UserLoginSerializer` (or use SimpleJWT's default) to validate credentials and return JWT tokens.
+- [ ] Create `UserProfileSerializer` to serialize user details for the frontend.
 
-### 3. Core Routing (`backend/config/urls.py`)
-- [ ] Set up base `api/` routing layout pointing to app-specific URL configurations.
-- [ ] Add JWT token endpoints: `api/auth/token/` and `api/auth/token/refresh/`.
-- [ ] Ensure no regular Django views exist that return HTML (except `admin/`).
+### 4. API Endpoints #28 (`apps/users/views.py` & `apps/users/urls.py`)
+- [ ] **POST /api/users/register/**: Endpoint for user signup.
+- [ ] **POST /api/users/login/**: Endpoint for login, returning the JWT `access` and `refresh` tokens.
+- [ ] **GET /api/users/profile/**: Protected endpoint to get the authenticated user's profile.
+- [ ] Update `apps/users/urls.py` to route these endpoints.
 
-### 4. App-Level Standardization & Scaffolding
-- [ ] Ensure each app (`users`, `products`, `orders`, `payments`, `ai`) has a `serializers.py` file.
-- [ ] Refactor apps to use DRF `APIView`, `generics`, or `ViewSet` instead of standard Django functional/class-based views.
-- [ ] Set up empty/base API endpoints for the MVP features outlined in `AGENTS.md` (e.g., standardizing `GET /api/products`, `POST /api/orders`, etc.).
+### 5. Testing #29 (`tests/users/`)
+- [ ] Write unit tests for user creation and password hashing.
+- [ ] Write integration tests for the registration endpoint.
+- [ ] Write integration tests for the login endpoint to ensure proper JWT generation.
+- [ ] Write integration tests verifying RBAC permissions (e.g., checking that a token with a `buyer` role cannot access a `farmer` endpoint if applicable).
 
-### 5. Error Handling Standardization (`backend/utils/exceptions.py`)
-- [ ] Verify or update `custom_exception_handler` to ensure all errors (400, 401, 403, 404, 500) are returned in a predictable, consistent JSON structure that the mobile frontend can easily parse.
+### 6. Custom User Model & Roles #30 (`apps/users/models.py`)
+- [ ] Implement or update a Custom `User` model inheriting from `AbstractBaseUser` and `PermissionsMixin`.
+- [ ] Define the `Role` choices (`farmer`, `buyer`).
+- [ ] Ensure the model uses a UUID primary key.
+- [ ] Add required fields (e.g., `email` as unique identifier, `password`, `role`, `is_active`, `is_staff`).
+- [ ] Create the custom `UserManager` to handle user creation and superuser creation.
+- [ ] Generate and apply database migrations.
 
 ## Deliverables
-- [x] Requirements updated with JWT and CORS packages (`requirements.txt`).
-- [x] DRF strictly configured for JSON and JWT auth (`config/settings.py`).
-- [x] Root API URLs setup (`config/urls.py`).
-- [x] `serializers.py` added/updated for all apps (`users`, `products`, `orders`, `payments`, `ai`).
-- [x] Refactored mobile-friendly API views replacing standard Django views.
-- [x] All error responses strictly returning JSON layout (`utils/exceptions.py`).
-
----
-
-**Note:** The mobile backend API refactoring implementation for Issue #18 is fully complete.
+- [ ] `users/permissions.py` with `IsFarmer` and `IsBuyer` classes.
+- [ ] Settings updated for JWT and Custom User Model.
+- [ ] `users/serializers.py` containing Auth serializers.
+- [ ] `users/views.py` and `users/urls.py` exposing Register, Login, and Profile endpoints.
+- [ ] Comprehensive test suite in `tests/users/` passing successfully.
+- [ ] Updated `users/models.py` with Custom User Model and Role choices.
+- [ ] Database migrations for the new User model.

@@ -1,6 +1,6 @@
 # AgroNet Backend
 
-A Django web application backend built for AgroNet, connecting farmers directly to buyers by removing middlemen from the agricultural supply chain.
+A strict Django REST Framework (DRF) mobile backend API built for AgroNet, connecting farmers directly to buyers by removing middlemen from the agricultural supply chain.
 
 ## Requirements
 
@@ -73,6 +73,7 @@ Instead of tracking issues directly in the README, specific documentation for ma
 - [Project Structure Initialization](docs/issue-5-project-structure/)
 - [Logging Setup](docs/issue-7-setup-logging/)
 - [Deployment for Railway/Fly.io](docs/issue-8-deployment/)
+- [Mobile Backend DRF API Refactoring](docs/issue-18-refactoring/)
 
 ## Agent Rules
 

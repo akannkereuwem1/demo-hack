@@ -33,15 +33,17 @@ class ExceptionHandlerTests(TestCase):
 
     @patch('utils.exceptions.logger.error')
     def test_unhandled_exception_logging(self, mock_logger_error):
-        """Test that unhandled standard python exceptions are logged and return None"""
+        """Test that unhandled standard python exceptions are logged and return 500 JSON"""
         exc = ValueError("A nasty internal error")
         context = {"view": None, "request": None}
         
         response = custom_exception_handler(exc, context)
         
-        # When exception_handler returns None, custom handler should also return None
+        # When exception_handler returns None, custom handler should explicitly return a 500 Response
         # and it should log an error.
-        self.assertIsNone(response)
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.data["error"]["message"], "Internal Server Error")
         mock_logger_error.assert_called_once()
         args, kwargs = mock_logger_error.call_args
         self.assertIn("Unhandled API Exception", args[0])

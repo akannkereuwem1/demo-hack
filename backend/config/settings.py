@@ -37,8 +37,13 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
-# ALLOWED_HOSTS is dynamically parsed from the environment
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', '*')
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(',') if host.strip()]
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*']
+
+# Explicitly allow Heroku domains and local environment
+ALLOWED_HOSTS.extend(['.herokuapp.com', 'localhost', '127.0.0.1'])
 
 
 # Application definition

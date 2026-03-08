@@ -1,6 +1,6 @@
 # AgroNet Backend
 
-A strict Django REST Framework (DRF) mobile backend API built for AgroNet, connecting farmers directly to buyers by removing middlemen from the agricultural supply chain.
+A Django REST Framework (DRF) mobile backend API built for AgroNet, connecting farmers directly to buyers by removing middlemen from the agricultural supply chain.
 
 ## Requirements
 

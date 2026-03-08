@@ -234,6 +234,12 @@ Rules:
 
 # 8. API Conventions
 
+**CRITICAL STRATEGIC RULE: STRICT MOBILE BACKEND API**
+This project is a dedicated mobile backend API. It is **NOT** a standard Django web application.
+- Agents MUST utilize Django REST Framework (DRF) for all endpoints.
+- Agents MUST NOT use standard Django views that return HTML templates (except for the built-in `/admin/`).
+- Agents MUST ensure that all responses, including all error codes (404, 500, etc.), return strict, parseable JSON for the mobile clients.
+
 Base path
 
 /api/

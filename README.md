@@ -72,7 +72,7 @@ Instead of tracking issues directly in the README, specific documentation for ma
 - [Database Configuration Setup](docs/issue-4-configure-postgresql/)
 - [Project Structure Initialization](docs/issue-5-project-structure/)
 - [Logging Setup](docs/issue-7-setup-logging/)
-- [Deployment for Railway/Fly.io](docs/issue-8-deployment/)
+- [Deployment for Heroku](docs/issue-8-deployment/)
 
 ## Agent Rules
 

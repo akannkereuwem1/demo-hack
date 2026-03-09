@@ -1,49 +1,150 @@
-# TASK.md - Issue #20: Authentication
+# TASK.md — Next Issues for Product Listings
 
-## Scope and Objectives
-The goal of this issue is to implement the MVP Authentication feature for the AgroNet mobile backend API. As specified in `AGENTS.md`, authentication must use JWT, include role-based access control (RBAC) for `farmer` and `buyer` roles, and adhere to strict security guidelines (no plaintext passwords, secrets in environment variables).
+## Current State (Post Issue #18)
 
-## Sub-Issues / Implementation Steps
+Issue #18 (Refactoring to Mobile Backend API) is **resolved**. The products app currently has:
 
-### 1. Implement Role-Based Access Control (RBAC) Permissions #24 (`apps/users/permissions.py`)
-- [ ] Create custom DRF permission class `IsFarmer` to restrict access to farmer-only endpoints.
-- [ ] Create custom DRF permission class `IsBuyer` to restrict access to buyer-only endpoints.
+- **`models.py`** — Empty (no Product model yet).
+- **`views.py`** — Placeholder stub views returning hardcoded JSON.
+- **`serializers.py`** — Empty scaffold.
+- **`urls.py`** — Routes to stubs at `api/products/` and `api/products/<pk>/`.
 
-### 2. Configure Bcrypt Password Hashing & JWT Configuration #25 (`config/settings.py`)
-- [ ] Verify `djangorestframework-simplejwt` is configured correctly.
-- [ ] Set `AUTH_USER_MODEL` to point to the new custom user model.
-- [ ] Configure JWT token lifetimes and settings.
+The foundation (DRF, JWT auth, UUID-based User model with `farmer`/`buyer` roles, bcrypt hashing, `drf-spectacular`) is fully in place. The issues below build on top of that.
 
-### 3. Authentication Serializers #27 (`apps/users/serializers.py`)
-- [ ] Create `UserRegistrationSerializer` handling input validation, role assignment, and secure password hashing.
-- [ ] Create `UserLoginSerializer` (or use SimpleJWT's default) to validate credentials and return JWT tokens.
-- [ ] Create `UserProfileSerializer` to serialize user details for the frontend.
+---
 
-### 4. API Endpoints #28 (`apps/users/views.py` & `apps/users/urls.py`)
-- [ ] **POST /api/users/register/**: Endpoint for user signup.
-- [ ] **POST /api/users/login/**: Endpoint for login, returning the JWT `access` and `refresh` tokens.
-- [ ] **GET /api/users/profile/**: Protected endpoint to get the authenticated user's profile.
-- [ ] Update `apps/users/urls.py` to route these endpoints.
+## Recommended Issues (In Order)
 
-### 5. Testing #29 (`tests/users/`)
-- [ ] Write unit tests for user creation and password hashing.
-- [ ] Write integration tests for the registration endpoint.
-- [ ] Write integration tests for the login endpoint to ensure proper JWT generation.
-- [ ] Write integration tests verifying RBAC permissions (e.g., checking that a token with a `buyer` role cannot access a `farmer` endpoint if applicable).
+### Issue 1: Create Product Model
 
-### 6. Custom User Model & Roles #30 (`apps/users/models.py`)
-- [ ] Implement or update a Custom `User` model inheriting from `AbstractBaseUser` and `PermissionsMixin`.
-- [ ] Define the `Role` choices (`farmer`, `buyer`).
-- [ ] Ensure the model uses a UUID primary key.
-- [ ] Add required fields (e.g., `email` as unique identifier, `password`, `role`, `is_active`, `is_staff`).
-- [ ] Create the custom `UserManager` to handle user creation and superuser creation.
-- [ ] Generate and apply database migrations.
+> **Why first:** Everything else depends on a real database model.
 
-## Deliverables
-- [ ] `users/permissions.py` with `IsFarmer` and `IsBuyer` classes.
-- [ ] Settings updated for JWT and Custom User Model.
-- [ ] `users/serializers.py` containing Auth serializers.
-- [ ] `users/views.py` and `users/urls.py` exposing Register, Login, and Profile endpoints.
-- [ ] Comprehensive test suite in `tests/users/` passing successfully.
-- [ ] Updated `users/models.py` with Custom User Model and Role choices.
-- [ ] Database migrations for the new User model.
+**Scope:**
+
+- [ ] Define `Product` model in `products/models.py` with UUID primary key
+- [ ] Fields: `title`, `description`, `crop_type`, `quantity`, `unit` (kg, tonnes, etc.), `price_per_unit`, `location`, `image_url`, `is_available`
+- [ ] `farmer` ForeignKey to custom `User` model (only farmers can list)
+- [ ] Timestamps: `created_at`, `updated_at`
+- [ ] Add `db_table = 'products'` and relevant indexes
+- [ ] Generate and apply migrations
+- [ ] Register model in `products/admin.py`
+
+**Files:** `products/models.py`, `products/admin.py`, `products/migrations/`
+
+---
+
+### Issue 2: Implement Product Serializer & POST /api/products/ (Create Listing)
+
+> **Why second:** Farmers need the ability to create listings before buyers can browse.
+
+**Scope:**
+
+- [ ] Create `ProductSerializer` in `products/serializers.py` (validate all fields, auto-assign `farmer` from `request.user`)
+- [ ] Replace stub `post()` in `ProductListView` with real create logic using the service layer pattern
+- [ ] Create `products/services.py` for business logic (views call services, per AGENTS.md Rule 6)
+- [ ] Enforce permission: only users with `role=farmer` can create products
+- [ ] Return created product JSON with `201 Created`
+
+
+**Files:** `products/serializers.py`, `products/views.py`, `products/services.py`, `tests/`
+
+---
+
+### Issue 3: Implement GET /api/products/ (Marketplace Feed) with Pagination
+
+> **Why combined:** Pagination is part of a well-implemented list endpoint, not a separate feature. DRF makes this easy to add at the same time.
+
+**Scope:**
+
+- [ ] Replace stub `get()` in `ProductListView` with real queryset (only `is_available=True`)
+- [ ] Configure `DEFAULT_PAGINATION_CLASS` and `PAGE_SIZE` in `settings.py` (e.g., `PageNumberPagination`, 20 per page)
+- [ ] Return paginated product list JSON
+
+
+**Files:** `products/views.py`, `config/settings.py`, `tests/`
+
+---
+
+### Issue 4: Implement GET /api/products/{id}/ (Product Detail)
+
+> **Why after the list:** Detail view is simple once the model and serializer exist.
+
+**Scope:**
+
+- [ ] Replace stub `get()` in `ProductDetailView` with real database lookup
+- [ ] Return `404` JSON if product not found
+- [ ] Change URL pattern from `<int:pk>` to `<uuid:pk>` (since we use UUID primary keys)
+
+
+**Files:** `products/views.py`, `products/urls.py`, `tests/`
+
+---
+
+### Issue 5: Add Filtering to Product Feed (Crop Type, Location)
+
+> **Why separate:** Filtering is additive logic on top of a working list endpoint.
+
+**Scope:**
+
+- [ ] Add `django-filter` to `requirements.txt`
+- [ ] Configure `DEFAULT_FILTER_BACKENDS` in `settings.py` (DjangoFilterBackend, SearchFilter, OrderingFilter)
+- [ ] Create `products/filters.py` with `ProductFilter` (filter by `crop_type`, `location`, price range)
+- [ ] Add search support (search by `title`, `description`)
+- [ ] Add ordering support (by `price_per_unit`, `created_at`)
+- [ ] Add unit tests for each filter in `tests/`
+
+**Files:** `products/filters.py`, `products/views.py`, `config/settings.py`, `requirements.txt`, `tests/`
+
+---
+
+### Issue 6: Add Image URL Storage (Cloudinary Integration)
+
+> **Why last:** Image upload is an external integration and should be isolated per AGENTS.md Rule 11.
+
+**Scope:**
+
+- [ ] Add `cloudinary` and `django-cloudinary-storage` to `requirements.txt`
+- [ ] Add Cloudinary config keys to `.env` and `settings.py` (using env vars — never commit secrets)
+- [ ] Create `products/image_service.py` to isolate the Cloudinary upload logic
+- [ ] Add an `ImageField` or use the existing `image_url` (CharField) depending on approach
+- [ ] Create or update an endpoint for image upload (e.g., `POST /api/products/{id}/image/`)
+
+
+**Files:** `products/image_service.py`, `products/models.py`, `products/views.py`, `products/urls.py`, `config/settings.py`, `requirements.txt`, `tests/`
+
+---
+
+## Summary Table
+
+| # | Issue Title                                      | Depends On | Key Files                          |
+|---|--------------------------------------------------|------------|------------------------------------|
+| 1 | Create Product Model                             | —          | `models.py`, `admin.py`            |
+| 2 | POST /api/products/ (Create Listing)             | Issue 1    | `serializers.py`, `views.py`, `services.py` |
+| 3 | GET /api/products/ (Feed) + Pagination           | Issue 1    | `views.py`, `settings.py`          |
+| 4 | GET /api/products/{id}/ (Detail)                 | Issue 1    | `views.py`, `urls.py`              |
+| 5 | Add Filtering (crop, location, price, search)    | Issue 3    | `filters.py`, `views.py`           |
+| 6 | Image Upload via Cloudinary                      | Issue 1    | `image_service.py`, `views.py`     |
+| 7 | Product Listing Tests (Unit + Integration)       | Issues 1–6 | `tests/`                           |
+
+---
+
+### Issue 7: Product Listing Tests (Unit + Integration)
+
+> **Why last:** All product features are complete, so tests can cover the full flow end-to-end.
+
+**Scope:**
+
+#### Unit Tests
+- [ ] **Model tests:** Product creation, UUID PK generation, farmer FK constraint, field validations, `is_available` default
+- [ ] **Serializer tests:** Valid input, missing required fields, invalid data types
+- [ ] **Permission tests:** Farmer can create, buyer cannot create (403), unauthenticated user rejected (401)
+- [ ] **Filter tests:** Filter by `crop_type`, `location`, price range; search by `title`/`description`
+- [ ] **Image service tests:** Mock Cloudinary calls, test invalid file types
+
+#### Integration Tests
+- [ ] **Full product lifecycle:** Create → List → Detail → Update → Delete
+- [ ] **Marketplace feed:** Pagination, only `is_available=True` returned, ordering
+- [ ] **Filtering flow:** Combine multiple filters, verify correct result sets
+- [ ] **Auth flow:** Token-authenticated farmer creates product, buyer browses feed
+
+**Files:** `tests/test_product_model.py`, `tests/test_product_api.py`, `tests/test_product_filters.py`

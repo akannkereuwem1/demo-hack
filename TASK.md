@@ -21,13 +21,13 @@ The foundation (DRF, JWT auth, UUID-based User model with `farmer`/`buyer` roles
 
 **Scope:**
 
-- [ ] Define `Product` model in `products/models.py` with UUID primary key
-- [ ] Fields: `title`, `description`, `crop_type`, `quantity`, `unit` (kg, tonnes, etc.), `price_per_unit`, `location`, `image_url`, `is_available`
-- [ ] `farmer` ForeignKey to custom `User` model (only farmers can list)
-- [ ] Timestamps: `created_at`, `updated_at`
-- [ ] Add `db_table = 'products'` and relevant indexes
-- [ ] Generate and apply migrations
-- [ ] Register model in `products/admin.py`
+- [x] Define `Product` model in `products/models.py` with UUID primary key
+- [x] Fields: `title`, `description`, `crop_type`, `quantity`, `unit` (kg, tonnes, etc.), `price_per_unit`, `location`, `image_url`, `is_available`
+- [x] `farmer` ForeignKey to custom `User` model (only farmers can list)
+- [x] Timestamps: `created_at`, `updated_at`
+- [x] Add `db_table = 'products'` and relevant indexes
+- [x] Generate and apply migrations
+- [x] Register model in `products/admin.py`
 
 **Files:** `products/models.py`, `products/admin.py`, `products/migrations/`
 
@@ -39,11 +39,11 @@ The foundation (DRF, JWT auth, UUID-based User model with `farmer`/`buyer` roles
 
 **Scope:**
 
-- [ ] Create `ProductSerializer` in `products/serializers.py` (validate all fields, auto-assign `farmer` from `request.user`)
-- [ ] Replace stub `post()` in `ProductListView` with real create logic using the service layer pattern
-- [ ] Create `products/services.py` for business logic (views call services, per AGENTS.md Rule 6)
-- [ ] Enforce permission: only users with `role=farmer` can create products
-- [ ] Return created product JSON with `201 Created`
+- [x] Create `ProductSerializer` in `products/serializers.py` (validate all fields, auto-assign `farmer` from `request.user`)
+- [x] Replace stub `post()` in `ProductListView` with real create logic using the service layer pattern
+- [x] Create `products/services.py` for business logic (views call services, per AGENTS.md Rule 6)
+- [x] Enforce permission: only users with `role=farmer` can create products
+- [x] Return created product JSON with `201 Created`
 
 
 **Files:** `products/serializers.py`, `products/views.py`, `products/services.py`, `tests/`
@@ -56,9 +56,9 @@ The foundation (DRF, JWT auth, UUID-based User model with `farmer`/`buyer` roles
 
 **Scope:**
 
-- [ ] Replace stub `get()` in `ProductListView` with real queryset (only `is_available=True`)
-- [ ] Configure `DEFAULT_PAGINATION_CLASS` and `PAGE_SIZE` in `settings.py` (e.g., `PageNumberPagination`, 20 per page)
-- [ ] Return paginated product list JSON
+- [x] Replace stub `get()` in `ProductListView` with real queryset (only `is_available=True`)
+- [x] Configure `DEFAULT_PAGINATION_CLASS` and `PAGE_SIZE` in `settings.py` (e.g., `PageNumberPagination`, 20 per page)
+- [x] Return paginated product list JSON
 
 
 **Files:** `products/views.py`, `config/settings.py`, `tests/`
@@ -71,9 +71,9 @@ The foundation (DRF, JWT auth, UUID-based User model with `farmer`/`buyer` roles
 
 **Scope:**
 
-- [ ] Replace stub `get()` in `ProductDetailView` with real database lookup
-- [ ] Return `404` JSON if product not found
-- [ ] Change URL pattern from `<int:pk>` to `<uuid:pk>` (since we use UUID primary keys)
+- [x] Replace stub `get()` in `ProductDetailView` with real database lookup
+- [x] Return `404` JSON if product not found
+- [x] Change URL pattern from `<int:pk>` to `<uuid:pk>` (since we use UUID primary keys)
 
 
 **Files:** `products/views.py`, `products/urls.py`, `tests/`
@@ -86,12 +86,12 @@ The foundation (DRF, JWT auth, UUID-based User model with `farmer`/`buyer` roles
 
 **Scope:**
 
-- [ ] Add `django-filter` to `requirements.txt`
-- [ ] Configure `DEFAULT_FILTER_BACKENDS` in `settings.py` (DjangoFilterBackend, SearchFilter, OrderingFilter)
-- [ ] Create `products/filters.py` with `ProductFilter` (filter by `crop_type`, `location`, price range)
-- [ ] Add search support (search by `title`, `description`)
-- [ ] Add ordering support (by `price_per_unit`, `created_at`)
-- [ ] Add unit tests for each filter in `tests/`
+- [x] Add `django-filter` to `requirements.txt`
+- [x] Configure `DEFAULT_FILTER_BACKENDS` in `settings.py` (DjangoFilterBackend, SearchFilter, OrderingFilter)
+- [x] Create `products/filters.py` with `ProductFilter` (filter by `crop_type`, `location`, price range)
+- [x] Add search support (search by `title`, `description`)
+- [x] Add ordering support (by `price_per_unit`, `created_at`)
+- [x] Add unit tests for each filter in `tests/`
 
 **Files:** `products/filters.py`, `products/views.py`, `config/settings.py`, `requirements.txt`, `tests/`
 
@@ -103,11 +103,11 @@ The foundation (DRF, JWT auth, UUID-based User model with `farmer`/`buyer` roles
 
 **Scope:**
 
-- [ ] Add `cloudinary` and `django-cloudinary-storage` to `requirements.txt`
-- [ ] Add Cloudinary config keys to `.env` and `settings.py` (using env vars — never commit secrets)
-- [ ] Create `products/image_service.py` to isolate the Cloudinary upload logic
-- [ ] Add an `ImageField` or use the existing `image_url` (CharField) depending on approach
-- [ ] Create or update an endpoint for image upload (e.g., `POST /api/products/{id}/image/`)
+- [x] Add `cloudinary` and `django-cloudinary-storage` to `requirements.txt`
+- [x] Add Cloudinary config keys to `.env` and `settings.py` (using env vars — never commit secrets)
+- [x] Create `products/image_service.py` to isolate the Cloudinary upload logic
+- [x] Add an `ImageField` or use the existing `image_url` (CharField) depending on approach
+- [x] Create or update an endpoint for image upload (e.g., `POST /api/products/{id}/image/`)
 
 
 **Files:** `products/image_service.py`, `products/models.py`, `products/views.py`, `products/urls.py`, `config/settings.py`, `requirements.txt`, `tests/`
@@ -135,16 +135,16 @@ The foundation (DRF, JWT auth, UUID-based User model with `farmer`/`buyer` roles
 **Scope:**
 
 #### Unit Tests
-- [ ] **Model tests:** Product creation, UUID PK generation, farmer FK constraint, field validations, `is_available` default
-- [ ] **Serializer tests:** Valid input, missing required fields, invalid data types
-- [ ] **Permission tests:** Farmer can create, buyer cannot create (403), unauthenticated user rejected (401)
-- [ ] **Filter tests:** Filter by `crop_type`, `location`, price range; search by `title`/`description`
-- [ ] **Image service tests:** Mock Cloudinary calls, test invalid file types
+- [x] **Model tests:** Product creation, UUID PK generation, farmer FK constraint, field validations, `is_available` default
+- [x] **Serializer tests:** Valid input, missing required fields, invalid data types
+- [x] **Permission tests:** Farmer can create, buyer cannot create (403), unauthenticated user rejected (401)
+- [x] **Filter tests:** Filter by `crop_type`, `location`, price range; search by `title`/`description`
+- [x] **Image service tests:** Mock Cloudinary calls, test invalid file types
 
 #### Integration Tests
-- [ ] **Full product lifecycle:** Create → List → Detail → Update → Delete
-- [ ] **Marketplace feed:** Pagination, only `is_available=True` returned, ordering
-- [ ] **Filtering flow:** Combine multiple filters, verify correct result sets
-- [ ] **Auth flow:** Token-authenticated farmer creates product, buyer browses feed
+- [x] **Full product lifecycle:** Create → List → Detail → Update → Delete
+- [x] **Marketplace feed:** Pagination, only `is_available=True` returned, ordering
+- [x] **Filtering flow:** Combine multiple filters, verify correct result sets
+- [x] **Auth flow:** Token-authenticated farmer creates product, buyer browses feed
 
 **Files:** `tests/test_product_model.py`, `tests/test_product_api.py`, `tests/test_product_filters.py`

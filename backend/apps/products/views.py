@@ -1,3 +1,6 @@
+from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -11,8 +14,21 @@ from .models import Product
 from .permissions import IsProductOwnerOrReadOnly
 from .serializers import ProductSerializer
 from .services import create_product
+from .image_service import upload_product_image
 
 
+@extend_schema_view(
+    get=extend_schema(
+        summary="List Products",
+        description="Fetch a paginated list of available agricultural products."
+    ),
+    post=extend_schema(
+        summary="Create Product",
+        description="Create a new produce listing. Restricted to users with the 'farmer' role.",
+        request=ProductSerializer,
+        responses={201: ProductSerializer}
+    )
+)
 class ProductListView(ListCreateAPIView):
     """
     List available products (paginated) or create a new product.
@@ -59,12 +75,25 @@ class ProductImageUploadView(APIView):
     """
     permission_classes = [IsAuthenticated, IsFarmer]
 
+    @extend_schema(
+        summary="Upload Product Image",
+        description="Upload an image for a specific product listing. Restricted to the product owner (farmer).",
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'image': {
+                        'type': 'string',
+                        'format': 'binary',
+                        'description': 'The image file to upload.'
+                    }
+                },
+                'required': ['image']
+            }
+        },
+        responses={200: ProductSerializer}
+    )
     def post(self, request, pk):
-        from django.shortcuts import get_object_or_404
-        from .image_service import upload_product_image
-        from drf_spectacular.utils import extend_schema, OpenApiParameter
-        from drf_spectacular.types import OpenApiTypes
-
         # 1. Fetch the product and ensure caller owns it
         product = get_object_or_404(Product, pk=pk)
         if product.farmer != request.user:

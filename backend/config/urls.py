@@ -39,7 +39,7 @@ urlpatterns = [
     
     # OpenAPI Schema Configuration
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema', template_name='swagger_dark.html'), name='swagger-ui'),
 
     # JWT Authentication Endpoints
     path('api/auth/token/', extend_schema_view(

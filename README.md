@@ -88,6 +88,17 @@ curl http://127.0.0.1:8000/api/users/profile/ \
   -H "Authorization: Bearer <access_token>"
 ```
 
+### Product Endpoints
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/products/` | Bearer JWT | List available products (paginated). Supports `?search=`, `?crop_type=`, `?location=`, `?min_price=`, `?max_price=`, and `?ordering=` |
+| POST | `/api/products/` | Bearer JWT (Farmer) | Create a new product listing |
+| GET | `/api/products/<uuid>/` | Bearer JWT | Retrieve a specific product's details |
+| PATCH | `/api/products/<uuid>/` | Bearer JWT (Owner) | Update pricing or details of an owned product |
+| DELETE | `/api/products/<uuid>/` | Bearer JWT (Owner) | Delete a product listing |
+| POST | `/api/products/<uuid>/image/` | Bearer JWT (Owner) | Upload a product image via `multipart/form-data` |
+
 ## Documentation
 
 Instead of tracking issues directly in the README, specific documentation for major feature implementations and setups can be found in the `docs/` directory. Each issue folder contains an `implementation-plan.md` and a `walkthrough.md` detailing the architectural decisions and execution steps.

@@ -8,6 +8,7 @@ checks, service delegation, and response serialization.
 
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -34,6 +35,11 @@ class OrderListView(APIView):
             return [IsBuyer()]
         return [IsAuthenticated()]
 
+    @extend_schema(
+        summary="List orders",
+        description="Returns orders scoped to the authenticated user. Buyers see their own orders; farmers see orders assigned to them.",
+        responses={200: OrderSerializer(many=True)},
+    )
     def get(self, request: Request) -> Response:
         """
         Return a paginated list of orders for the authenticated user.
@@ -62,6 +68,16 @@ class OrderListView(APIView):
         serializer = OrderSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        summary="Create order",
+        description="Create a new order for the authenticated buyer. Requires product_id and quantity.",
+        request=OrderCreateSerializer,
+        responses={
+            201: OrderSerializer,
+            400: OpenApiResponse(description="Product unavailable or invalid input"),
+            403: OpenApiResponse(description="Farmers cannot create orders"),
+        },
+    )
     def post(self, request: Request) -> Response:
         """
         Create a new order for the authenticated buyer.
@@ -114,13 +130,11 @@ class OrderDetailView(APIView):
 
     permission_classes = [IsAuthenticated, IsOrderParticipant]
 
+    @extend_schema(
+        summary="Get order detail",
+        responses={200: OrderSerializer, 403: OpenApiResponse(description="Not a participant"), 404: OpenApiResponse(description="Not found")},
+    )
     def get(self, request: Request, pk) -> Response:
-        """
-        Return the full detail of a single order.
-
-        Returns HTTP 404 if the order does not exist.
-        Returns HTTP 403 if the user is neither the buyer nor the farmer.
-        """
         order = get_object_or_404(Order, pk=pk)
         self.check_object_permissions(request, order)
         return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
@@ -133,13 +147,14 @@ class OrderConfirmView(APIView):
 
     permission_classes = [IsAuthenticated, IsOrderFarmer]
 
+    @extend_schema(
+        summary="Confirm order",
+        description="Farmer confirms a pending order, transitioning it to 'confirmed'.",
+        request=None,
+        responses={200: OrderSerializer, 400: OpenApiResponse(description="Invalid transition"), 403: OpenApiResponse(description="Not the farmer")},
+    )
     def patch(self, request: Request, pk) -> Response:
-        """
-        Transition the order from pending → confirmed.
-
-        Returns HTTP 400 if the transition is invalid.
-        Returns HTTP 403 if the user is not the farmer on the order.
-        """
+        """Transition the order from pending → confirmed."""
         order = get_object_or_404(Order, pk=pk)
         self.check_object_permissions(request, order)
 
@@ -160,13 +175,14 @@ class OrderDeclineView(APIView):
 
     permission_classes = [IsAuthenticated, IsOrderFarmer]
 
+    @extend_schema(
+        summary="Decline order",
+        description="Farmer declines a pending order, transitioning it to 'declined'.",
+        request=None,
+        responses={200: OrderSerializer, 400: OpenApiResponse(description="Invalid transition"), 403: OpenApiResponse(description="Not the farmer")},
+    )
     def patch(self, request: Request, pk) -> Response:
-        """
-        Transition the order from pending → declined.
-
-        Returns HTTP 400 if the transition is invalid.
-        Returns HTTP 403 if the user is not the farmer on the order.
-        """
+        """Transition the order from pending → declined."""
         order = get_object_or_404(Order, pk=pk)
         self.check_object_permissions(request, order)
 
@@ -187,13 +203,14 @@ class OrderCompleteView(APIView):
 
     permission_classes = [IsAuthenticated, IsOrderFarmer]
 
+    @extend_schema(
+        summary="Complete order",
+        description="Farmer marks a paid order as completed.",
+        request=None,
+        responses={200: OrderSerializer, 400: OpenApiResponse(description="Invalid transition"), 403: OpenApiResponse(description="Not the farmer")},
+    )
     def patch(self, request: Request, pk) -> Response:
-        """
-        Transition the order from paid → completed.
-
-        Returns HTTP 400 if the transition is invalid.
-        Returns HTTP 403 if the user is not the farmer on the order.
-        """
+        """Transition the order from paid → completed."""
         order = get_object_or_404(Order, pk=pk)
         self.check_object_permissions(request, order)
 

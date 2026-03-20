@@ -46,3 +46,10 @@ TASK.md
 Thumbs.db
 
 .env
+
+# Hypothesis
+.hypothesis/
+
+# Kiro specs and steering
+.kiro/specs/
+.kiro/steering/

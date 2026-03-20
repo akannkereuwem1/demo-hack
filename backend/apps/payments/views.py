@@ -5,6 +5,7 @@ Views contain no business logic — they parse requests, enforce permissions,
 delegate to Payment_Service, and return serialized responses.
 """
 
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -30,6 +31,12 @@ class PaymentInitiateView(APIView):
 
     permission_classes = [IsAuthenticated, IsBuyer]
 
+    @extend_schema(
+        request=PaymentInitiateSerializer,
+        responses={201: PaymentResponseSerializer},
+        summary="Initiate a payment",
+        description="Initiate a payment for a confirmed order. Returns transaction reference and Interswitch checkout params.",
+    )
     def post(self, request):
         serializer = PaymentInitiateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -56,6 +63,12 @@ class PaymentVerifyView(APIView):
 
     permission_classes = [IsAuthenticated, IsBuyer]
 
+    @extend_schema(
+        request=PaymentVerifySerializer,
+        responses={200: PaymentResponseSerializer},
+        summary="Verify a payment",
+        description="Verify a payment outcome with Interswitch and update its status.",
+    )
     def post(self, request):
         serializer = PaymentVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -83,6 +96,12 @@ class PaymentWebhookView(APIView):
     authentication_classes = []
     permission_classes = []
 
+    @extend_schema(
+        request=None,
+        responses={200: OpenApiResponse(description="Webhook received successfully")},
+        summary="Interswitch webhook callback",
+        description="Receives Interswitch webhook callbacks. Authenticated via HMAC signature header X-Interswitch-Signature.",
+    )
     def post(self, request):
         raw_body: bytes = request.body
         signature_header: str = request.headers.get("X-Interswitch-Signature", "")

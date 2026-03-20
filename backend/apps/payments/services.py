@@ -7,9 +7,10 @@ All payment business logic lives here. Views must not contain business logic.
 import uuid
 from decimal import Decimal
 
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 from orders.models import Order
 from orders.services import OrderTransitionError, mark_as_paid as order_mark_as_paid
